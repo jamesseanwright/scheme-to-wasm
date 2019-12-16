@@ -12,4 +12,32 @@ describe('tokeniser', () => {
       { type: 'paren', value: ')' },
     ]);
   });
+
+  it('should should support keywords', () => {
+    const source = `
+      (define square
+        (lambda (n)
+          (* n n)
+        )
+      )
+    `;
+
+    expect(tokenise(source)).toEqual([
+      { type: 'paren', value: '(' },
+      { type: 'keyword', value: 'define' },
+      { type: 'name', value: 'square' },
+      { type: 'paren', value: '(' },
+      { type: 'keyword', value: 'lambda' },
+      { type: 'paren', value: '(' },
+      { type: 'name', value: 'n' },
+      { type: 'paren', value: ')' },
+      { type: 'paren', value: '(' },
+      { type: 'operator', value: '*' },
+      { type: 'name', value: 'n' },
+      { type: 'name', value: 'n' },
+      { type: 'paren', value: ')' },
+      { type: 'paren', value: ')' },
+      { type: 'paren', value: ')' },
+    ]);
+  });
 });

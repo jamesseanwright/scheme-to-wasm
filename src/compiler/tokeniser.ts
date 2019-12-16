@@ -18,7 +18,7 @@ const tokenTypes = new Map<RegExp, TokenType>([
   [/\*/, 'operator'],
   [/\d/, 'number'],
   [/define|lambda/, 'keyword'],
-  [/[a-z_]+/, 'name']
+  [/[a-z_]+/, 'name'],
 ]);
 
 const getTokenType = (value: string) => {

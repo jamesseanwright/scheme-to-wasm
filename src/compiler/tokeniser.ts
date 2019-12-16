@@ -1,8 +1,12 @@
 type TokenType =
   | 'paren'
   | 'operator'
+  | 'keyword'
+  | 'name'
   | 'number'
   | 'unknown';
+
+type KnownTokenTypes = Exclude<TokenType, 'unknown'>;
 
 interface Token {
   type: TokenType;
@@ -13,6 +17,8 @@ const tokenTypes = new Map<RegExp, TokenType>([
   [/[\(\)]/, 'paren'],
   [/\*/, 'operator'],
   [/\d/, 'number'],
+  [/define|lambda/, 'keyword'],
+  [/[a-z_]+/, 'name']
 ]);
 
 const getTokenType = (value: string) => {
@@ -25,14 +31,57 @@ const getTokenType = (value: string) => {
   return 'unknown';
 };
 
-const createToken = (value: string): Token => ({
-  type: getTokenType(value),
+const createToken = (type: KnownTokenTypes, value: string): Token => ({
+  type,
   value,
 });
 
-const tokenise = (source: string) =>
-  [...source]
-    .map(char => createToken(char))
-    .filter(({ type }) => type !== 'unknown');
+const getIterator = (source: string) =>
+  source[Symbol.iterator]();
+
+const isAlpha = (char: string) => /[a-z]/.test(char);
+
+const accumulateAlpha = (initialChar: string, iterator: Iterator<string, string>) => {
+  let acc = initialChar;
+  let result = iterator.next();
+
+  while (isAlpha(result.value)) {
+    acc += result.value;
+    result = iterator.next();
+  }
+
+  /* We want to append the
+   * terminus so we can include
+   * it in our tokens list! */
+  return [acc, result.value];
+};
+
+const appendValuesAsTokens = (tokens: Token[], values: string[]) => {
+  for (let value of values) {
+    const type = getTokenType(value);
+
+    if (type !== 'unknown') {
+      tokens.push(createToken(type, value))
+    }
+  }
+}
+
+const tokenise = (source: string) => {
+  const tokens: Token[] = [];
+  const iterator = getIterator(source);
+  let result = iterator.next();
+
+  while (!result.done) {
+    const values = isAlpha(result.value)
+      ? accumulateAlpha(result.value, iterator)
+      : [result.value];
+
+    appendValuesAsTokens(tokens, values);
+
+    result = iterator.next();
+  }
+
+  return tokens;
+};
 
 export default tokenise;

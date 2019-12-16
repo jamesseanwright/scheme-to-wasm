@@ -1,0 +1,20 @@
+{
+  "name": "scheme-to-wasm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "static -H '{\"Cache-Control\": \"no-cache, must-revalidate\"}' src",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "24.0.23",
+    "jest": "24.9.0",
+    "node-static": "0.7.11",
+    "ts-jest": "24.2.0",
+    "typescript": "3.7.3"
+  }
+}

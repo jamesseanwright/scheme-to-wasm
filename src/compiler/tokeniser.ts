@@ -8,7 +8,7 @@ type TokenType =
 
 type KnownTokenTypes = Exclude<TokenType, 'unknown'>;
 
-interface Token {
+export interface Token {
   type: TokenType;
   value: string;
 }

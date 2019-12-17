@@ -4,6 +4,7 @@ import { Token } from '../tokeniser';
 describe('abstract syntax tree', () => {
   it('should process a list of tokens into an AST', () => {
     const tokens: Token[] = [
+      // TODO: can we discard the parens?!
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'define' },
       { type: 'name', value: 'square' },
@@ -23,6 +24,26 @@ describe('abstract syntax tree', () => {
 
     expect(buildAST(tokens)).toEqual({
       type: 'program',
+      body: [
+        {
+          type: 'definition',
+          name: 'square',
+          value: {
+            type: 'function',
+            params: [
+              { type: 'param', name: 'n' }
+            ],
+            body: [
+              {
+                type: 'binaryExpression',
+                operator: '*',
+                left: 'n',
+                right: 'n',
+              },
+            ],
+          },
+        },
+      ],
     });
   });
 });

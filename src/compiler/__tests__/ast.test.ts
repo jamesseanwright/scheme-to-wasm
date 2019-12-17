@@ -4,7 +4,6 @@ import { Token } from '../tokeniser';
 describe('abstract syntax tree', () => {
   it('should process a list of tokens into an AST', () => {
     const tokens: Token[] = [
-      // TODO: can we discard the parens?!
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'define' },
       { type: 'name', value: 'square' },

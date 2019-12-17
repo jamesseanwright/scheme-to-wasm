@@ -36,9 +36,6 @@ const createToken = (type: KnownTokenTypes, value: string): Token => ({
   value,
 });
 
-const getIterator = (source: string) =>
-  source[Symbol.iterator]();
-
 const isAlpha = (char: string) => /[a-z]/.test(char);
 
 const accumulateAlpha = (initialChar: string, iterator: Iterator<string, string>) => {
@@ -68,7 +65,7 @@ const appendValuesAsTokens = (tokens: Token[], values: string[]) => {
 
 const tokenise = (source: string) => {
   const tokens: Token[] = [];
-  const iterator = getIterator(source);
+  const iterator = source[Symbol.iterator]();
   let result = iterator.next();
 
   while (!result.done) {

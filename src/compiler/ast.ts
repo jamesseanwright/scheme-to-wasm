@@ -50,20 +50,20 @@ const isFunction = (token: Token) =>
 
 const iterate = (
   tokens: Iterator<Token, Token>,
+  currentOpenParens = 0, // Parens left open in previous iteration
 ) => {
-  // const iterator = tokens[Symbol.iterator]() as Iterator<Token, Token>;
   const nodes: Node[] = [];
   let started = false;
-  let openingParens = 0;
+  let openParens = currentOpenParens;
   let result = tokens.next();
 
-  while (!result.done && (!started || openingParens > 0)) {
+  while (!result.done && (!started || openParens > 0)) {
     started = true;
     // TODO: avoid duped prop name (value)
     if (result.value.value === '(') {
-      openingParens++;
+      openParens++;
     } else if (result.value.value === ')') {
-      openingParens--;
+      openParens--;
     } else if (isDefinition(result.value)) {
       const { value: name } = tokens.next().value;
 
@@ -88,7 +88,11 @@ const iterate = (
         name: result.value.value,
       });
     } else if (result.value.type === 'operator') {
-      const operands = iterate(tokens);
+      /* We pass 1 here as we already have
+       * an opening parenthesis as a result
+       * of using an operator, so we need to
+       * scan to the next closing paren. */
+      const operands = iterate(tokens, 1);
 
       nodes.push({
         type: 'binaryExpression',

@@ -72,6 +72,32 @@ describe('abstract syntax tree', () => {
       { type: 'paren', value: ')' },
     ];
 
-    throw new Error('Test incomplete');
+    expect(buildAST(tokens)).toEqual({
+      type: 'program',
+      body: [
+        {
+          type: 'definition',
+          name: {
+            type: 'identifier',
+            name: 'square',
+          },
+          value: {
+            type: 'function',
+            params: [
+              { type: 'identifier', name: 'n' },
+            ],
+            body: [
+              {
+                type: 'binaryExpression',
+                operator: '*',
+                left: { type: 'identifier', name: 'n' },
+                right: { type: 'identifier', name: 'n' },
+              },
+            ],
+          },
+        },
+        {}
+      ],
+    });
   });
 });

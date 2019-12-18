@@ -77,7 +77,7 @@ const createBinaryExpression = (
 
 const scan = (
   tokens: Iterator<Token, Token>,
-  currentOpenParens = 0, // Parens left open in previous iteration
+  currentOpenParens = 0, // Parens opened by previous iteration
 ) => {
   const nodes: Node[] = [];
   let started = false;

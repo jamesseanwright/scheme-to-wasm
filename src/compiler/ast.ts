@@ -48,7 +48,7 @@ const isDefinition = (token: Token) =>
 const isFunction = (token: Token) =>
   token.type === 'keyword' && token.value === 'lambda';
 
-const iterate = (
+const scan = (
   tokens: Iterator<Token, Token>,
   currentOpenParens = 0, // Parens left open in previous iteration
 ) => {
@@ -69,7 +69,7 @@ const iterate = (
        * an opening parenthesis as a result
        * of using an operator, so we need to
        * scan to the next closing paren. */
-      const [name, value] = iterate(tokens, 1);
+      const [name, value] = scan(tokens, 1);
 
       nodes.push({
         type: 'definition',
@@ -77,8 +77,8 @@ const iterate = (
         value,
       });
     } else if (isFunction(result.value)) {
-      const params = iterate(tokens);
-      const body = iterate(tokens);
+      const params = scan(tokens);
+      const body = scan(tokens);
 
       nodes.push({
         type: 'function',
@@ -92,7 +92,7 @@ const iterate = (
         name: result.value.value,
       });
     } else if (result.value.type === 'operator') {
-      const operands = iterate(tokens, 1);
+      const operands = scan(tokens, 1);
 
       nodes.push({
         type: 'binaryExpression',
@@ -110,7 +110,7 @@ const iterate = (
 
 const buildAST = (tokens: Token[]): Program => ({
   type: 'program',
-  body: iterate(tokens[Symbol.iterator]()),
+  body: scan(tokens[Symbol.iterator]()),
 });
 
 export default buildAST;

@@ -94,7 +94,7 @@ const createCallExpression = (
 const scan = (
   tokens: Iterator<Token, Token>,
 ) => {
-  // TODO: lexical scoping!
+  // TODO: use tree for lexical scoping support
   const definitions: Definition[] = [];
 
   const createBinding = ({ value }: Definition, name: string) => {

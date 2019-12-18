@@ -48,73 +48,65 @@ const isDefinition = (token: Token) =>
 const isFunction = (token: Token) =>
   token.type === 'keyword' && token.value === 'lambda';
 
-const isExpressionBalanced = (openingParens: number) =>
-  (res: IteratorResult<Token, Token>, parens: number) => res.done || parens < openingParens
-
-const toAST = (
-  tokens: Token[],
+const iterate = (
+  tokens: Iterator<Token, Token>,
 ) => {
-  const iterator = tokens[Symbol.iterator]() as Iterator<Token, Token>;
+  // const iterator = tokens[Symbol.iterator]() as Iterator<Token, Token>;
+  const nodes: Node[] = [];
+  let started = false;
+  let openingParens = 0;
+  let result = tokens.next();
 
-  const iterate = () => {
-    const nodes: Node[] = [];
-    let started = false;
-    let openingParens = 0;
-    let result = iterator.next();
+  while (!result.done && (!started || openingParens > 0)) {
+    started = true;
+    // TODO: avoid duped prop name (value)
+    if (result.value.value === '(') {
+      openingParens++;
+    } else if (result.value.value === ')') {
+      openingParens--;
+    } else if (isDefinition(result.value)) {
+      const { value: name } = tokens.next().value;
 
-    while (!result.done && (!started || openingParens > 0)) {
-      started = true;
-      // TODO: avoid duped prop name (value)
-      if (result.value.value === '(') {
-        openingParens++;
-      } else if (result.value.value === ')') {
-        openingParens--;
-      } else if (isDefinition(result.value)) {
-        const { value: name } = iterator.next().value;
+      nodes.push({
+        type: 'definition',
+        name,
+        value: iterate(tokens)[0],
+      });
+    } else if (isFunction(result.value)) {
+      const params = iterate(tokens);
+      const body = iterate(tokens);
 
-        nodes.push({
-          type: 'definition',
-          name,
-          value: iterate()[0],
-        });
-      } else if (isFunction(result.value)) {
-        const params = iterate();
-        const body = iterate();
+      nodes.push({
+        type: 'function',
+        params,
+        body,
+      });
+    } else if (result.value.type === 'name') {
+      // TODO: name => identifier exclusively?
+      nodes.push({
+        type: 'identifier',
+        name: result.value.value,
+      });
+    } else if (result.value.type === 'operator') {
+      const operands = iterate(tokens);
 
-        nodes.push({
-          type: 'function',
-          params,
-          body,
-        });
-      } else if (result.value.type === 'name') {
-        // TODO: name => identifier exclusively?
-        nodes.push({
-          type: 'identifier',
-          name: result.value.value,
-        });
-      } else if (result.value.type === 'operator') {
-        const operands = iterate();
-
-        nodes.push({
-          type: 'binaryExpression',
-          operator: result.value.value,
-          left: operands[0],
-          right: operands[1],
-        });
-      }
-
-      result = iterator.next();
+      nodes.push({
+        type: 'binaryExpression',
+        operator: result.value.value,
+        left: operands[0],
+        right: operands[1],
+      });
     }
 
-    return nodes;
-  };
+    result = tokens.next();
+  }
 
-  return iterate();
+  return nodes;
 };
 
 const buildAST = (tokens: Token[]): Program => ({
   type: 'program',
-  body: toAST(tokens),
+  body: iterate(tokens[Symbol.iterator]()),
 });
 
 export default buildAST;

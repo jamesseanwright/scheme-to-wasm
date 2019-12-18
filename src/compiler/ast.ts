@@ -48,6 +48,33 @@ const isDefinition = (token: Token) =>
 const isFunction = (token: Token) =>
   token.type === 'keyword' && token.value === 'lambda';
 
+const createDefinition = (name: Node, value: Node): Definition => ({
+  type: 'definition',
+  name,
+  value,
+});
+
+const createFunction = (params: Node[], body: Node[]): Function => ({
+  type: 'function',
+  params,
+  body,
+});
+
+const createIdentifier = (name: string): Identifier => ({
+  type: 'identifier',
+  name,
+});
+
+const createBinaryExpression = (
+  operator: string,
+  operands: Node[],
+): BinaryExpression => ({
+  type: 'binaryExpression',
+  operator,
+  left: operands[0],
+  right: operands[1],
+});
+
 const scan = (
   tokens: Iterator<Token, Token>,
   currentOpenParens = 0, // Parens left open in previous iteration
@@ -71,34 +98,20 @@ const scan = (
        * scan to the next closing paren. */
       const [name, value] = scan(tokens, 1);
 
-      nodes.push({
-        type: 'definition',
-        name,
-        value,
-      });
+      nodes.push(createDefinition(name, value));
     } else if (isFunction(result.value)) {
       const params = scan(tokens);
       const body = scan(tokens);
 
-      nodes.push({
-        type: 'function',
-        params,
-        body,
-      });
+      nodes.push(createFunction(params, body));
     } else if (result.value.type === 'identifier') {
-      nodes.push({
-        type: 'identifier',
-        name: result.value.value,
-      });
+      nodes.push(createIdentifier(result.value.value));
     } else if (result.value.type === 'operator') {
       const operands = scan(tokens, 1);
 
-      nodes.push({
-        type: 'binaryExpression',
-        operator: result.value.value,
-        left: operands[0],
-        right: operands[1],
-      });
+      nodes.push(
+        createBinaryExpression(result.value.value, operands),
+      );
     }
 
     result = tokens.next();

@@ -24,7 +24,7 @@ type Program = {
 
 type Definition = {
   type: 'definition';
-  name: Node; // TODO: type-safe assertion as Identifier
+  identifier: Node; // TODO: type-safe assertion as Identifier
   value: Node;
 };
 
@@ -34,10 +34,17 @@ type Function = {
   body: Node[];
 };
 
+type CallExpression = {
+  type: 'callExpression',
+  callee: Node,
+  args: Node[],
+};
+
 type Node =
   | Program
   | Expression
   | BinaryExpression
+  | CallExpression
   | Definition
   | Identifier
   | Function;
@@ -48,9 +55,9 @@ const isDefinition = (token: Token) =>
 const isFunction = (token: Token) =>
   token.type === 'keyword' && token.value === 'lambda';
 
-const createDefinition = (name: Node, value: Node): Definition => ({
+const createDefinition = (identifier: Node, value: Node): Definition => ({
   type: 'definition',
-  name,
+  identifier,
   value,
 });
 
@@ -75,49 +82,81 @@ const createBinaryExpression = (
   right: operands[1],
 });
 
+const createCallExpression = (
+  name: string,
+  args: Node[],
+): CallExpression => ({
+  type: 'callExpression',
+  callee: createIdentifier(name),
+  args,
+});
+
 const scan = (
   tokens: Iterator<Token, Token>,
-  currentOpenParens = 0, // Parens opened by previous iteration
 ) => {
-  const nodes: Node[] = [];
-  let started = false;
-  let openParens = currentOpenParens;
-  let result = tokens.next();
+  // TODO: lexical scoping!
+  const definitions: Definition[] = [];
 
-  while (!result.done && (!started || openParens > 0)) {
-    started = true;
-    // TODO: avoid duped prop name (value)
-    if (result.value.value === '(') {
-      openParens++;
-    } else if (result.value.value === ')') {
-      openParens--;
-    } else if (isDefinition(result.value)) {
-      /* We pass 1 here as we already have
-       * an opening parenthesis as a result
-       * of using an operator, so we need to
-       * scan to the next closing paren. */
-      const [name, value] = scan(tokens, 1);
+  const createBinding = ({ value }: Definition, name: string) => {
+    /* Assumes every reference to
+     * an identifier is a function
+     * call for the time being. */
+    return createCallExpression(name, doScan(1))
+  };
 
-      nodes.push(createDefinition(name, value));
-    } else if (isFunction(result.value)) {
-      const params = scan(tokens);
-      const body = scan(tokens);
+  const doScan = (
+    currentOpenParens = 0, // Parens opened by previous iteration
+  ) => {
+    const nodes: Node[] = [];
+    let started = false;
+    let openParens = currentOpenParens;
+    let result = tokens.next();
 
-      nodes.push(createFunction(params, body));
-    } else if (result.value.type === 'identifier') {
-      nodes.push(createIdentifier(result.value.value));
-    } else if (result.value.type === 'operator') {
-      const operands = scan(tokens, 1);
+    while (!result.done && (!started || openParens > 0)) {
+      started = true;
+      // TODO: avoid duped prop name (value)
+      if (result.value.value === '(') {
+        openParens++;
+      } else if (result.value.value === ')') {
+        openParens--;
+      } else if (isDefinition(result.value)) {
+        /* We pass 1 here as we already have
+        * an opening parenthesis as a result
+        * of using an operator, so we need to
+        * scan to the next closing paren. */
+        const [name, value] = doScan(1) as [Identifier, Node];
+        const definition = createDefinition(name, value);
 
-      nodes.push(
-        createBinaryExpression(result.value.value, operands),
-      );
+        nodes.push(definition);
+        definitions.push(definition);
+      } else if (isFunction(result.value)) {
+        const params = doScan();
+        const body = doScan();
+
+        nodes.push(createFunction(params, body));
+      } else if (result.value.type === 'identifier') {
+        // TODO: remove type assertions
+        const definition = nodes.find(d => (d.type === 'definition' && (d.identifier as Identifier).name === result.value.value)) as Definition;
+        nodes.push(
+          definition
+            ? createBinding(definition, result.value.value)
+            : createIdentifier(result.value.value),
+        );
+      } else if (result.value.type === 'operator') {
+        const operands = doScan(1);
+
+        nodes.push(
+          createBinaryExpression(result.value.value, operands),
+        );
+      }
+
+      result = tokens.next();
     }
 
-    result = tokens.next();
-  }
+    return nodes;
+  };
 
-  return nodes;
+  return doScan();
 };
 
 const buildAST = (tokens: Token[]): Program => ({

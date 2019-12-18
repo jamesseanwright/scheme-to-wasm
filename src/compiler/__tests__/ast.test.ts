@@ -27,11 +27,14 @@ describe('abstract syntax tree', () => {
       body: [
         {
           type: 'definition',
-          name: 'square', // TODO: rather than advance iterator, make this identifier node?
+          name: {
+            type: 'identifier',
+            name: 'square',
+          },
           value: {
             type: 'function',
             params: [
-              { type: 'identifier', name: 'n' }
+              { type: 'identifier', name: 'n' },
             ],
             body: [
               {
@@ -69,5 +72,7 @@ describe('abstract syntax tree', () => {
       { type: 'number', value: '5' },
       { type: 'paren', value: ')' },
     ];
+
+    throw new Error('Test incomplete');
   });
 });

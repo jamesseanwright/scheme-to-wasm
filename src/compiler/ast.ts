@@ -24,7 +24,7 @@ type Program = {
 
 type Definition = {
   type: 'definition';
-  name: string;
+  name: Node; // TODO: type-safe assertion as Identifier
   value: Node;
 };
 
@@ -65,12 +65,16 @@ const iterate = (
     } else if (result.value.value === ')') {
       openParens--;
     } else if (isDefinition(result.value)) {
-      const { value: name } = tokens.next().value;
+      /* We pass 1 here as we already have
+       * an opening parenthesis as a result
+       * of using an operator, so we need to
+       * scan to the next closing paren. */
+      const [name, value] = iterate(tokens, 1);
 
       nodes.push({
         type: 'definition',
         name,
-        value: iterate(tokens)[0],
+        value,
       });
     } else if (isFunction(result.value)) {
       const params = iterate(tokens);
@@ -88,10 +92,6 @@ const iterate = (
         name: result.value.value,
       });
     } else if (result.value.type === 'operator') {
-      /* We pass 1 here as we already have
-       * an opening parenthesis as a result
-       * of using an operator, so we need to
-       * scan to the next closing paren. */
       const operands = iterate(tokens, 1);
 
       nodes.push({

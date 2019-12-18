@@ -39,14 +39,17 @@ const isDefinition = (token: Token) =>
 const isFunction = (token: Token) =>
   token.type === 'keyword' && token.value === 'lambda';
 
+const isExpressionBalanced = (openingParens: number) =>
+  (res: IteratorResult<Token, Token>, parens: number) => res.done || parens < openingParens
+
 const toAST = (
   tokens: Token[],
 ) => {
   const iterator = tokens[Symbol.iterator]() as Iterator<Token, Token>;
+  let openingParens = 0;
 
   const iterate = (isDone: Done) => {
     const nodes: Node[] = [];
-    let openingParens = 0;
     let result = iterator.next();
 
     while (!isDone(result, openingParens)) {
@@ -61,17 +64,15 @@ const toAST = (
         nodes.push({
           type: 'definition',
           name,
-          value: iterate(
-            (res, parens) => parens === openingParens,
-          )[0],
+          value: iterate(isExpressionBalanced(openingParens))[0],
         });
       } else if (isFunction(result.value)) {
         const params = iterate(
-          (res, parens) => parens === openingParens,
+          isExpressionBalanced(openingParens),
         );
 
         const body = iterate(
-          (res, parens) => parens === openingParens,
+          isExpressionBalanced(openingParens),
         );
 
         nodes.push({

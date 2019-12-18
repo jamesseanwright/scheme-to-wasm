@@ -21,6 +21,8 @@ describe('abstract syntax tree', () => {
       { type: 'paren', value: ')' },
     ];
 
+    console.log(JSON.stringify(buildAST(tokens), null, 2));
+
     expect(buildAST(tokens)).toEqual({
       type: 'program',
       body: [

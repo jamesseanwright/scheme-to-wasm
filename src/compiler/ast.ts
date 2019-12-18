@@ -42,11 +42,6 @@ type Node =
   | Identifier
   | Function;
 
-type Done = (
-  result: IteratorResult<Token, Token>,
-  parens: number,
-) => boolean;
-
 const isDefinition = (token: Token) =>
   token.type === 'keyword' && token.value === 'define';
 
@@ -60,13 +55,15 @@ const toAST = (
   tokens: Token[],
 ) => {
   const iterator = tokens[Symbol.iterator]() as Iterator<Token, Token>;
-  let openingParens = 0;
 
-  const iterate = (isDone: Done) => {
+  const iterate = () => {
     const nodes: Node[] = [];
+    let started = false;
+    let openingParens = 0;
     let result = iterator.next();
 
-    while (!isDone(result, openingParens)) {
+    while (!result.done && (!started || openingParens > 0)) {
+      started = true;
       // TODO: avoid duped prop name (value)
       if (result.value.value === '(') {
         openingParens++;
@@ -78,16 +75,11 @@ const toAST = (
         nodes.push({
           type: 'definition',
           name,
-          value: iterate(isExpressionBalanced(openingParens))[0],
+          value: iterate()[0],
         });
       } else if (isFunction(result.value)) {
-        const params = iterate(
-          isExpressionBalanced(openingParens),
-        );
-
-        const body = iterate(
-          isExpressionBalanced(openingParens),
-        );
+        const params = iterate();
+        const body = iterate();
 
         nodes.push({
           type: 'function',
@@ -101,9 +93,7 @@ const toAST = (
           name: result.value.value,
         });
       } else if (result.value.type === 'operator') {
-        const operands = iterate(
-          isExpressionBalanced(openingParens)
-        );
+        const operands = iterate();
 
         nodes.push({
           type: 'binaryExpression',
@@ -119,7 +109,7 @@ const toAST = (
     return nodes;
   };
 
-  return iterate(res => Boolean(res.done));
+  return iterate();
 };
 
 const buildAST = (tokens: Token[]): Program => ({

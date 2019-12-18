@@ -96,7 +96,19 @@ describe('abstract syntax tree', () => {
             ],
           },
         },
-        {}
+        {
+          type: 'callExpression',
+          callee: {
+            type: 'identifier',
+            name: 'square',
+            args: [
+              {
+                type: 'literal',
+                value: '5',
+              },
+            ],
+          },
+        },
       ],
     });
   });

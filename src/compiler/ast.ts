@@ -85,8 +85,7 @@ const scan = (
         params,
         body,
       });
-    } else if (result.value.type === 'name') {
-      // TODO: name => identifier exclusively?
+    } else if (result.value.type === 'identifier') {
       nodes.push({
         type: 'identifier',
         name: result.value.value,

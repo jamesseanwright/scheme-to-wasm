@@ -1,22 +1,21 @@
 import buildAST from '../ast';
 import { Token } from '../tokeniser';
-import { identifier } from '@babel/types';
 
 describe('abstract syntax tree', () => {
   it('should process a list of tokens into an AST', () => {
     const tokens: Token[] = [
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'define' },
-      { type: 'name', value: 'square' },
+      { type: 'identifier', value: 'square' },
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'lambda' },
       { type: 'paren', value: '(' },
-      { type: 'name', value: 'n' },
+      { type: 'identifier', value: 'n' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: '(' },
       { type: 'operator', value: '*' },
-      { type: 'name', value: 'n' },
-      { type: 'name', value: 'n' },
+      { type: 'identifier', value: 'n' },
+      { type: 'identifier', value: 'n' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: ')' },
@@ -54,21 +53,21 @@ describe('abstract syntax tree', () => {
     const tokens: Token[] = [
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'define' },
-      { type: 'name', value: 'square' },
+      { type: 'identifier', value: 'square' },
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'lambda' },
       { type: 'paren', value: '(' },
-      { type: 'name', value: 'n' },
+      { type: 'identifier', value: 'n' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: '(' },
       { type: 'operator', value: '*' },
-      { type: 'name', value: 'n' },
-      { type: 'name', value: 'n' },
+      { type: 'identifier', value: 'n' },
+      { type: 'identifier', value: 'n' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: '(' },
-      { type: 'name', value: 'square' },
+      { type: 'identifier', value: 'square' },
       { type: 'number', value: '5' },
       { type: 'paren', value: ')' },
     ];

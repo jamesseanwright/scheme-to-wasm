@@ -2,7 +2,7 @@ type TokenType =
   | 'paren'
   | 'operator'
   | 'keyword'
-  | 'name'
+  | 'identifier'
   | 'number'
   | 'unknown';
 
@@ -18,7 +18,7 @@ const tokenTypes = new Map<RegExp, TokenType>([
   [/\*/, 'operator'],
   [/\d/, 'number'],
   [/define|lambda/, 'keyword'],
-  [/[a-z_]+/, 'name'],
+  [/[a-z_]+/, 'identifier'],
 ]);
 
 const getTokenType = (value: string) => {

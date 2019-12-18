@@ -26,18 +26,18 @@ describe('abstract syntax tree', () => {
       body: [
         {
           type: 'definition',
-          name: 'square',
+          name: 'square', // TODO: rather than advance iterator, make this identifier node?
           value: {
             type: 'function',
             params: [
-              { type: 'param', name: 'n' }
+              { type: 'identifier', name: 'n' }
             ],
             body: [
               {
                 type: 'binaryExpression',
                 operator: '*',
-                left: 'n',
-                right: 'n',
+                left: { type: 'identifier', name: 'n' },
+                right: { type: 'identifier', name: 'n' },
               },
             ],
           },

@@ -1,8 +1,20 @@
 import { Token } from './tokeniser';
 
 // TODO: support source locations
+type Identifier = {
+  type: 'identifier';
+  name: string;
+};
+
 type Expression = {
   type: 'expression';
+};
+
+type BinaryExpression = {
+  type: 'binaryExpression';
+  operator: string;
+  left: Node; // TODO: type-safe assertion as Identifier
+  right: Node;
 };
 
 type Program = {
@@ -25,7 +37,9 @@ type Function = {
 type Node =
   | Program
   | Expression
+  | BinaryExpression
   | Definition
+  | Identifier
   | Function;
 
 type Done = (
@@ -79,6 +93,23 @@ const toAST = (
           type: 'function',
           params,
           body,
+        });
+      } else if (result.value.type === 'name') {
+        // TODO: name => identifier exclusively?
+        nodes.push({
+          type: 'identifier',
+          name: result.value.value,
+        });
+      } else if (result.value.type === 'operator') {
+        const operands = iterate(
+          isExpressionBalanced(openingParens)
+        );
+
+        nodes.push({
+          type: 'binaryExpression',
+          operator: result.value.value,
+          left: operands[0],
+          right: operands[1],
         });
       }
 

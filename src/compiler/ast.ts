@@ -106,6 +106,59 @@ const scan = (
     return createCallExpression(name, doScan(1, scopeDeclarations))
   };
 
+  const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
+    /* We pass 1 here as we already have
+     * an opening parenthesis as a result
+      * of using an operator, so we need to
+    * scan to the next closing paren. */
+    const [name, value] = doScan(1, scopeDeclarations) as [Identifier, Node];
+    const definition = createDefinition(name, value);
+
+    nodes.push(definition);
+    scopeDeclarations.append(definition);
+  };
+
+  const captureFunction = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
+    const params = doScan(0, scopeDeclarations);
+    const body = doScan(0, scopeDeclarations.branch());
+
+    nodes.push(createFunction(params, body));
+  };
+
+  const handleIdentifier = (
+    nodes: Node[],
+    scopeDeclarations: Tree<Definition>,
+    name: string
+  ) => {
+    const definition = findBottomUp(
+      scopeDeclarations,
+      // TODO: avoid type assertion
+      x => (x.identifier as Identifier).name === name,
+    );
+
+    nodes.push(
+      definition
+        ? createBinding(
+          definition,
+          name,
+          scopeDeclarations,
+        )
+        : createIdentifier(name),
+    );
+  };
+
+  const captureOperator = (
+    nodes: Node[],
+    scopeDeclarations: Tree<Definition>,
+    operator: string,
+  ) => {
+    const operands = doScan(1, scopeDeclarations);
+
+    nodes.push(
+      createBinaryExpression(operator, operands),
+    );
+  };
+
   const doScan = (
     currentOpenParens: number, // Parens opened by previous iteration
     scopeDeclarations: Tree<Definition>,
@@ -123,41 +176,20 @@ const scan = (
       } else if (result.value.value === ')') {
         openParens--;
       } else if (isDefinition(result.value)) {
-        /* We pass 1 here as we already have
-        * an opening parenthesis as a result
-        * of using an operator, so we need to
-        * scan to the next closing paren. */
-        const [name, value] = doScan(1, scopeDeclarations) as [Identifier, Node];
-        const definition = createDefinition(name, value);
-
-        nodes.push(definition);
-        scopeDeclarations.append(definition);
+        captureDefinition(nodes, scopeDeclarations);
       } else if (isFunction(result.value)) {
-        const params = doScan(0, scopeDeclarations);
-        const body = doScan(0, scopeDeclarations.branch());
-
-        nodes.push(createFunction(params, body));
+        captureFunction(nodes, scopeDeclarations);
       } else if (result.value.type === 'identifier') {
-        const definition = findBottomUp(
+        handleIdentifier(
+          nodes,
           scopeDeclarations,
-          // TODO: avoid type assertion
-          x => (x.identifier as Identifier).name === result.value.value,
-        );
-
-        nodes.push(
-          definition
-            ? createBinding(
-              definition,
-              result.value.value,
-              scopeDeclarations,
-            )
-            : createIdentifier(result.value.value),
+          result.value.value,
         );
       } else if (result.value.type === 'operator') {
-        const operands = doScan(1, scopeDeclarations);
-
-        nodes.push(
-          createBinaryExpression(result.value.value, operands),
+        captureOperator(
+          nodes,
+          scopeDeclarations,
+          result.value.value,
         );
       }
 

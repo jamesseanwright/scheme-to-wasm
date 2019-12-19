@@ -111,7 +111,7 @@ const handleOpenParens = (openParens: number, token: Token) => {
   );
 };
 
-const scan = (
+const buildNodes = (
   tokens: Iterator<Token, Token>,
 ) => {
   const createBinding = (
@@ -122,7 +122,7 @@ const scan = (
     /* Assumes every reference to
      * an identifier is a function
      * call for the time being. */
-    return createCallExpression(name, doScan(1, scopeDeclarations))
+    return createCallExpression(name, scan(1, scopeDeclarations))
   };
 
   const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
@@ -130,7 +130,7 @@ const scan = (
      * an opening parenthesis as a result
       * of using an operator, so we need to
     * scan to the next closing paren. */
-    const [name, value] = doScan(1, scopeDeclarations) as [Identifier, Node];
+    const [name, value] = scan(1, scopeDeclarations) as [Identifier, Node];
     const definition = createDefinition(name, value);
 
     nodes.push(definition);
@@ -138,8 +138,8 @@ const scan = (
   };
 
   const captureFunction = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
-    const params = doScan(0, scopeDeclarations);
-    const body = doScan(0, scopeDeclarations.branch());
+    const params = scan(0, scopeDeclarations);
+    const body = scan(0, scopeDeclarations.branch());
 
     nodes.push(createFunction(params, body));
   };
@@ -171,7 +171,7 @@ const scan = (
     scopeDeclarations: Tree<Definition>,
     operator: string,
   ) => {
-    const operands = doScan(1, scopeDeclarations);
+    const operands = scan(1, scopeDeclarations);
 
     nodes.push(
       createBinaryExpression(operator, operands),
@@ -196,7 +196,7 @@ const scan = (
     return () => undefined;
   };
 
-  const doScan = (
+  const scan = (
     currentOpenParens: number, // Parens opened by previous iteration
     scopeDeclarations: Tree<Definition>,
   ) => {
@@ -222,12 +222,12 @@ const scan = (
     return nodes;
   };
 
-  return doScan(0, createTree<Definition>());
+  return scan(0, createTree<Definition>());
 };
 
 const buildAST = (tokens: Token[]): Program => ({
   type: 'program',
-  body: scan(tokens[Symbol.iterator]()),
+  body: buildNodes(tokens[Symbol.iterator]()),
 });
 
 export default buildAST;

@@ -5,10 +5,12 @@ interface Tree<TChild> {
   append(child: TChild): void;
   branch(): Tree<TChild>;
   parent(): Tree<TChild>;
-  unwrap(): Tree<TChild>[];
+  unwrap(): TChild[];
 }
 
-const createTree = <TChild>(parent?: TChild): Tree<TChild> => ({
+type FindPredicate<TChild> = (child: TChild) => boolean;
+
+export const createTree = <TChild>(parent?: TChild): Tree<TChild> => ({
   append(child) {
     throw new Error('Unimplemented');
   },
@@ -26,4 +28,9 @@ const createTree = <TChild>(parent?: TChild): Tree<TChild> => ({
   },
 });
 
-export default createTree();
+export const findInTree = <TChild>(
+  tree: Tree<TChild>,
+  predicate: FindPredicate<TChild>
+) => {
+  throw new Error('Unimplemented');
+};

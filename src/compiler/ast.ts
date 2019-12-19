@@ -50,6 +50,14 @@ type Node =
   | Identifier
   | Function;
 
+type TokenPredicate = (token: Token) => boolean;
+
+type NodeCapturer = (
+  nodes: Node[],
+  scopeDeclarations: Tree<Definition>,
+  operator: string,
+) => void;
+
 const isDefinition = (token: Token) =>
   token.type === 'keyword' && token.value === 'define';
 
@@ -159,6 +167,24 @@ const scan = (
     );
   };
 
+  const nodeCapturers = new Map<TokenPredicate, NodeCapturer>([
+    [isDefinition, captureDefinition],
+    [isFunction, captureFunction],
+    [token => token.type === 'identifier', handleIdentifier],
+    [token => token.type === 'operator', captureOperator],
+  ]);
+
+  const findCapturer = (token: Token) => {
+    for (let [predicate, capturer] of nodeCapturers) {
+      if (predicate(token)) {
+        return capturer;
+      }
+    }
+
+    // No-op fallback
+    return () => undefined;
+  };
+
   const doScan = (
     currentOpenParens: number, // Parens opened by previous iteration
     scopeDeclarations: Tree<Definition>,
@@ -175,18 +201,8 @@ const scan = (
         openParens++;
       } else if (result.value.value === ')') {
         openParens--;
-      } else if (isDefinition(result.value)) {
-        captureDefinition(nodes, scopeDeclarations);
-      } else if (isFunction(result.value)) {
-        captureFunction(nodes, scopeDeclarations);
-      } else if (result.value.type === 'identifier') {
-        handleIdentifier(
-          nodes,
-          scopeDeclarations,
-          result.value.value,
-        );
-      } else if (result.value.type === 'operator') {
-        captureOperator(
+      } else {
+        findCapturer(result.value)(
           nodes,
           scopeDeclarations,
           result.value.value,

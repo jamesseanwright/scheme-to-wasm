@@ -57,7 +57,7 @@ export const findBottomUp = <TChild>(
   const parent = tree.parent();
 
   return result ?? (parent && findBottomUp(parent, predicate));
-}
+};
 
 export const unwrapTree = <TChild>(tree: Tree<TChild>) => {
   throw new Error('Unimplemented');

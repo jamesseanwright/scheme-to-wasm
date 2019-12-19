@@ -100,6 +100,17 @@ const createCallExpression = (
   args,
 });
 
+const handleOpenParens = (openParens: number, token: Token) => {
+  if (token.type !== 'paren') {
+    return openParens;
+  }
+
+  return openParens + (token.value === '('
+    ? 1
+    : -1
+  );
+};
+
 const scan = (
   tokens: Iterator<Token, Token>,
 ) => {
@@ -196,18 +207,14 @@ const scan = (
 
     while (!result.done && (!started || openParens > 0)) {
       started = true;
+      openParens = handleOpenParens(openParens, result.value);
+
       // TODO: avoid duped prop name (value)
-      if (result.value.value === '(') {
-        openParens++;
-      } else if (result.value.value === ')') {
-        openParens--;
-      } else {
-        findCapturer(result.value)(
-          nodes,
-          scopeDeclarations,
-          result.value.value,
-        );
-      }
+      findCapturer(result.value)(
+        nodes,
+        scopeDeclarations,
+        result.value.value,
+      );
 
       result = tokens.next();
     }

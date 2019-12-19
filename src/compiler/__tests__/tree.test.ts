@@ -52,4 +52,19 @@ describe('findBottomUp', () => {
 
     expect(result).toBeUndefined();
   });
+
+  it('should not provide the predicate with any children that are trees', () => {
+    const predicate = jest.fn();
+
+    findBottomUp(
+      tree,
+      predicate,
+    );
+
+    expect(predicate).toHaveBeenCalledTimes(3);
+
+    [1, 2, 3].forEach((n, i, arr) => {
+      expect(predicate).toHaveBeenCalledWith(n, i, arr);
+    });
+  });
 });

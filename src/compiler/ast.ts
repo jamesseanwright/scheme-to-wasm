@@ -1,4 +1,5 @@
 import { Token } from './tokeniser';
+import { createTree, Tree, findBottomUp } from './tree';
 
 // TODO: support source locations
 type Identifier = {
@@ -94,18 +95,20 @@ const createCallExpression = (
 const scan = (
   tokens: Iterator<Token, Token>,
 ) => {
-  // TODO: use tree for lexical scoping support
-  const definitions: Definition[] = [];
-
-  const createBinding = ({ value }: Definition, name: string) => {
+  const createBinding = (
+    { value }: Definition,
+    name: string,
+    scopeDeclarations: Tree<Definition>,
+  ) => {
     /* Assumes every reference to
      * an identifier is a function
      * call for the time being. */
-    return createCallExpression(name, doScan(1))
+    return createCallExpression(name, doScan(1, scopeDeclarations))
   };
 
   const doScan = (
-    currentOpenParens = 0, // Parens opened by previous iteration
+    currentOpenParens: number, // Parens opened by previous iteration
+    scopeDeclarations: Tree<Definition>,
   ) => {
     const nodes: Node[] = [];
     let started = false;
@@ -124,26 +127,34 @@ const scan = (
         * an opening parenthesis as a result
         * of using an operator, so we need to
         * scan to the next closing paren. */
-        const [name, value] = doScan(1) as [Identifier, Node];
+        const [name, value] = doScan(1, scopeDeclarations) as [Identifier, Node];
         const definition = createDefinition(name, value);
 
         nodes.push(definition);
-        definitions.push(definition);
+        scopeDeclarations.append(definition);
       } else if (isFunction(result.value)) {
-        const params = doScan();
-        const body = doScan();
+        const params = doScan(0, scopeDeclarations);
+        const body = doScan(0, scopeDeclarations.branch());
 
         nodes.push(createFunction(params, body));
       } else if (result.value.type === 'identifier') {
-        // TODO: remove type assertions
-        const definition = nodes.find(d => (d.type === 'definition' && (d.identifier as Identifier).name === result.value.value)) as Definition;
+        const definition = findBottomUp(
+          scopeDeclarations,
+          // TODO: avoid type assertion
+          x => (x.identifier as Identifier).name === result.value.value,
+        );
+
         nodes.push(
           definition
-            ? createBinding(definition, result.value.value)
+            ? createBinding(
+              definition,
+              result.value.value,
+              scopeDeclarations,
+            )
             : createIdentifier(result.value.value),
         );
       } else if (result.value.type === 'operator') {
-        const operands = doScan(1);
+        const operands = doScan(1, scopeDeclarations);
 
         nodes.push(
           createBinaryExpression(result.value.value, operands),
@@ -156,7 +167,7 @@ const scan = (
     return nodes;
   };
 
-  return doScan();
+  return doScan(0, createTree<Definition>());
 };
 
 const buildAST = (tokens: Token[]): Program => ({

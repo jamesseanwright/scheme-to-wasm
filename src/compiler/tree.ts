@@ -3,11 +3,12 @@
 
 type Child<T> = T | Tree<T>;
 
-interface Tree<TChild> {
+export interface Tree<TChild> {
   append(child: TChild): void;
   branch(): Tree<TChild>;
   parent(): Tree<TChild> | undefined;
   children(): Child<TChild>[];
+  isTree(): true;
 }
 
 type FindPredicate<TChild> = (child: TChild) => boolean;
@@ -22,6 +23,10 @@ export const createTree = <TChild>(parent?: Tree<TChild>): Tree<TChild> => {
   const children: Child<TChild>[] = [];
 
   return {
+    isTree() {
+      return true;
+    },
+
     append(child) {
       children.push(child);
     },
@@ -53,8 +58,12 @@ export const findBottomUp = <TChild>(
   tree: Tree<TChild>,
   predicate: FindPredicate<TChild>
 ): TChild | undefined => {
-  const result = tree.children().find(predicate) as TChild | undefined;
-  const parent = tree.parent();
+  const result = tree
+    .children()
+    .filter(x => !(x as Tree<TChild>).isTree)
+    .find(predicate) as TChild | undefined;
+
+    const parent = tree.parent();
 
   return result ?? (parent && findBottomUp(parent, predicate));
 };

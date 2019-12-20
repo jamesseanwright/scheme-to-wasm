@@ -29,6 +29,11 @@ type Definition = {
   value: Node;
 };
 
+type Literal = {
+  type: 'literal';
+  value: string;
+};
+
 type Function = {
   type: 'function';
   params: Node[];
@@ -48,6 +53,7 @@ type Node =
   | CallExpression
   | Definition
   | Identifier
+  | Literal
   | Function;
 
 type TokenPredicate = (token: Token) => boolean;
@@ -79,6 +85,11 @@ const createFunction = (params: Node[], body: Node[]): Function => ({
 const createIdentifier = (name: string): Identifier => ({
   type: 'identifier',
   name,
+});
+
+const createLiteral = (value: string): Literal => ({
+  type: 'literal',
+  value,
 });
 
 const createBinaryExpression = (
@@ -125,12 +136,12 @@ const buildNodes = (
     /* Assumes every reference to
      * an identifier is a function
      * call for the time being. */
-    return createCallExpression(name, scan(scopeDeclarations))
+    return createCallExpression(name, scan(scopeDeclarations, 1))
   };
 
   const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
     // TODO/FIXME: find clean way to store definition before values!
-    const [name, value] = scan(scopeDeclarations, 1) as [Identifier, Node];
+    const [name, value] = scan(scopeDeclarations, 1, 2) as [Identifier, Node];
     const definition = createDefinition(name, value);
 
     nodes.push(definition);
@@ -179,11 +190,20 @@ const buildNodes = (
     );
   };
 
+  const captureLiteral = (
+    nodes: Node[],
+    scopeDeclarations: Tree<Definition>,
+    value: string,
+  ) => {
+    nodes.push(createLiteral(value));
+  };
+
   const nodeCapturers = new Map<TokenPredicate, NodeCapturer>([
     [isDefinition, captureDefinition],
     [isFunction, captureFunction],
     [token => token.type === 'identifier', handleIdentifier],
     [token => token.type === 'operator', captureOperator],
+    [token => token.type === 'number', captureLiteral]
   ]);
 
   const findCapturer = (token: Token) => {
@@ -200,12 +220,13 @@ const buildNodes = (
   const scan = (
     scopeDeclarations: Tree<Definition>,
     unterminatedSexps = 0,
+    scanLimit = Number.POSITIVE_INFINITY,
   ) => {
     const nodes: Node[] = [];
     let result = tokens.next();
     let openParens = handleOpenParens(unterminatedSexps, result);
 
-    while (!result.done && openParens > 0) {
+    while (!result.done && openParens > 0 && nodes.length < scanLimit) {
       // TODO: avoid duped prop name (value)
       findCapturer(result.value)(
         nodes,

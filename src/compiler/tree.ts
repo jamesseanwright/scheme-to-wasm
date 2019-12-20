@@ -13,12 +13,6 @@ export interface Tree<TChild> {
 
 type FindPredicate<TChild> = (child: TChild) => boolean;
 
-const isTree = <TChild>(child: Child<TChild>): child is Tree<TChild> =>
-  ['append', 'branch', 'parent', 'children'].every(
-    (k: keyof Tree<TChild>) =>
-      typeof (child as Tree<TChild>)[k] === 'function'
-  );
-
 export const createTree = <TChild>(parent?: Tree<TChild>): Tree<TChild> => {
   const children: Child<TChild>[] = [];
 
@@ -66,8 +60,4 @@ export const findBottomUp = <TChild>(
     const parent = tree.parent();
 
   return result ?? (parent && findBottomUp(parent, predicate));
-};
-
-export const unwrapTree = <TChild>(tree: Tree<TChild>) => {
-  throw new Error('Unimplemented');
 };

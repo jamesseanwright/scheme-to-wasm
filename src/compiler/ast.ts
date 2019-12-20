@@ -129,6 +129,7 @@ const buildNodes = (
   };
 
   const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
+    // TODO/FIXME: find clean way to store definition before values!
     const [name, value] = scan(scopeDeclarations, 1) as [Identifier, Node];
     const definition = createDefinition(name, value);
 

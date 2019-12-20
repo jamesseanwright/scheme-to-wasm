@@ -112,4 +112,6 @@ describe('abstract syntax tree', () => {
       ],
     });
   });
+
+  it.todo('should support multiple expressions in lambdas, treating the last as the return');
 });

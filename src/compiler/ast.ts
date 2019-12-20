@@ -36,9 +36,9 @@ type Function = {
 };
 
 type CallExpression = {
-  type: 'callExpression',
-  callee: Node,
-  args: Node[],
+  type: 'callExpression';
+  callee: Node;
+  args: Node[];
 };
 
 type Node =

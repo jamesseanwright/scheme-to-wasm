@@ -100,12 +100,15 @@ const createCallExpression = (
   args,
 });
 
-const handleOpenParens = (openParens: number, token: Token) => {
-  if (token.type !== 'paren') {
+const handleOpenParens = (
+  openParens: number,
+  { done, value }: IteratorResult<Token, Token>,
+) => {
+  if (done || value.type !== 'paren') {
     return openParens;
   }
 
-  return openParens + (token.value === '('
+  return openParens + (value.value === '('
     ? 1
     : -1
   );
@@ -122,15 +125,11 @@ const buildNodes = (
     /* Assumes every reference to
      * an identifier is a function
      * call for the time being. */
-    return createCallExpression(name, scan(1, scopeDeclarations))
+    return createCallExpression(name, scan(scopeDeclarations))
   };
 
   const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
-    /* We pass 1 here as we already have
-     * an opening parenthesis as a result
-      * of using an operator, so we need to
-    * scan to the next closing paren. */
-    const [name, value] = scan(1, scopeDeclarations) as [Identifier, Node];
+    const [name, value] = scan(scopeDeclarations, 1) as [Identifier, Node];
     const definition = createDefinition(name, value);
 
     nodes.push(definition);
@@ -138,8 +137,9 @@ const buildNodes = (
   };
 
   const captureFunction = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
-    const params = scan(0, scopeDeclarations);
-    const body = scan(0, scopeDeclarations.branch());
+    const scope = scopeDeclarations.branch();
+    const params = scan(scope);
+    const body = scan(scope);
 
     nodes.push(createFunction(params, body));
   };
@@ -171,7 +171,7 @@ const buildNodes = (
     scopeDeclarations: Tree<Definition>,
     operator: string,
   ) => {
-    const operands = scan(1, scopeDeclarations);
+    const operands = scan(scopeDeclarations, 1);
 
     nodes.push(
       createBinaryExpression(operator, operands),
@@ -197,18 +197,14 @@ const buildNodes = (
   };
 
   const scan = (
-    currentOpenParens: number, // Parens opened by previous iteration
     scopeDeclarations: Tree<Definition>,
+    unterminatedSexps = 0,
   ) => {
     const nodes: Node[] = [];
-    let started = false;
-    let openParens = currentOpenParens;
     let result = tokens.next();
+    let openParens = handleOpenParens(unterminatedSexps, result);
 
-    while (!result.done && (!started || openParens > 0)) {
-      started = true;
-      openParens = handleOpenParens(openParens, result.value);
-
+    while (!result.done && openParens > 0) {
       // TODO: avoid duped prop name (value)
       findCapturer(result.value)(
         nodes,
@@ -217,12 +213,13 @@ const buildNodes = (
       );
 
       result = tokens.next();
+      openParens = handleOpenParens(openParens, result);
     }
 
     return nodes;
   };
 
-  return scan(0, createTree<Definition>());
+  return scan(createTree<Definition>());
 };
 
 const buildAST = (tokens: Token[]): Program => ({

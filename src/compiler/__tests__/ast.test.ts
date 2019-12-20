@@ -49,7 +49,7 @@ describe('abstract syntax tree', () => {
     });
   });
 
-  it.skip('should support multiple top-level expressions', () => {
+  it.only('should support multiple top-level expressions', () => {
     const tokens: Token[] = [
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'define' },

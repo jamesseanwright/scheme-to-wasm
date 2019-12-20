@@ -159,7 +159,7 @@ const buildNodes = (
   const handleIdentifier = (
     nodes: Node[],
     scopeDeclarations: Tree<Definition>,
-    name: string
+    name: string,
   ) => {
     const definition = findBottomUp(
       scopeDeclarations,

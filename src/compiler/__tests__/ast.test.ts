@@ -114,15 +114,17 @@ describe('abstract syntax tree', () => {
   });
 
   it('should support multiple expressions in lambdas', () => {
-    // (define operate
-    //   (lambda (x y)
-    //     (define multiplied (* x y))
-    //     (define divided (/ x y))
-    //     (+ multiplied divided)
-    //   )
-    // )
+    /*
+      (define operate
+        (lambda (x y)
+          (define multiplied (* x y))
+          (define divided (/ x y))
+          (+ multiplied divided)
+        )
+      )
 
-    // (operate 2 3)
+      (operate 2 3)
+    */
 
     const tokens: Token[] = [
       { type: 'paren', value: '(' },

@@ -7,15 +7,15 @@ type Identifier = {
   name: string;
 };
 
-type Expression = {
-  type: 'expression';
-};
+type Operand =
+  | Identifier
+  | Literal;
 
 type BinaryExpression = {
   type: 'binaryExpression';
   operator: string;
-  left: Node; // TODO: type-safe assertion as Identifier
-  right: Node;
+  left: Operand;
+  right: Operand;
 };
 
 type Program = {
@@ -25,7 +25,7 @@ type Program = {
 
 type Definition = {
   type: 'definition';
-  identifier: Node; // TODO: type-safe assertion as Identifier
+  identifier: Identifier;
   value: Node;
 };
 
@@ -48,7 +48,6 @@ type CallExpression = {
 
 type Node =
   | Program
-  | Expression
   | BinaryExpression
   | CallExpression
   | Definition
@@ -70,7 +69,7 @@ const isDefinition = (token: Token) =>
 const isFunction = (token: Token) =>
   token.type === 'keyword' && token.value === 'lambda';
 
-const createDefinition = (identifier: Node, value: Node): Definition => ({
+const createDefinition = (identifier: Identifier, value: Node): Definition => ({
   type: 'definition',
   identifier,
   value,
@@ -94,7 +93,7 @@ const createLiteral = (value: string): Literal => ({
 
 const createBinaryExpression = (
   operator: string,
-  operands: Node[],
+  operands: Operand[],
 ): BinaryExpression => ({
   type: 'binaryExpression',
   operator,
@@ -172,8 +171,7 @@ const buildNodes = (
   ) => {
     const definition = findBottomUp(
       scopeDeclarations,
-      // TODO: avoid type assertion
-      x => (x.identifier as Identifier).name === name,
+      x => x.identifier.name === name,
     );
 
     nodes.push(
@@ -192,7 +190,7 @@ const buildNodes = (
     scopeDeclarations: Tree<Definition>,
     operator: string,
   ) => {
-    const operands = scan(scopeDeclarations, 1);
+    const operands = scan(scopeDeclarations, 1) as Operand[];
 
     nodes.push(
       createBinaryExpression(operator, operands),

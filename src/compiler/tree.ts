@@ -50,14 +50,14 @@ export const createTree = <TChild>(parent?: Tree<TChild>): Tree<TChild> => {
  * suggest an entirely separate scope */
 export const findBottomUp = <TChild>(
   tree: Tree<TChild>,
-  predicate: FindPredicate<TChild>
+  predicate: FindPredicate<TChild>,
 ): TChild | undefined => {
   const result = tree
     .children()
     .filter(x => !(x as Tree<TChild>).isTree)
     .find(predicate) as TChild | undefined;
 
-    const parent = tree.parent();
+  const parent = tree.parent();
 
   return result ?? (parent && findBottomUp(parent, predicate));
 };

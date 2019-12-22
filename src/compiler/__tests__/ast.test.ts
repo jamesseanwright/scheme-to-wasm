@@ -32,9 +32,7 @@ describe('abstract syntax tree', () => {
           },
           value: {
             type: 'function',
-            params: [
-              { type: 'identifier', name: 'n' },
-            ],
+            params: [{ type: 'identifier', name: 'n' }],
             body: [
               {
                 type: 'binaryExpression',
@@ -83,9 +81,7 @@ describe('abstract syntax tree', () => {
           },
           value: {
             type: 'function',
-            params: [
-              { type: 'identifier', name: 'n' },
-            ],
+            params: [{ type: 'identifier', name: 'n' }],
             body: [
               {
                 type: 'binaryExpression',
@@ -175,87 +171,87 @@ describe('abstract syntax tree', () => {
           type: 'definition',
           identifier: {
             type: 'identifier',
-            name: 'operate'
+            name: 'operate',
           },
           value: {
             type: 'function',
             params: [
               {
                 type: 'identifier',
-                name: 'x'
+                name: 'x',
               },
               {
                 type: 'identifier',
-                name: 'y'
-              }
+                name: 'y',
+              },
             ],
             body: [
               {
                 type: 'definition',
                 identifier: {
                   type: 'identifier',
-                  name: 'multiplied'
+                  name: 'multiplied',
                 },
                 value: {
                   type: 'binaryExpression',
                   operator: '*',
                   left: {
                     type: 'identifier',
-                    name: 'x'
+                    name: 'x',
                   },
                   right: {
                     type: 'identifier',
-                    name: 'y'
-                  }
-                }
+                    name: 'y',
+                  },
+                },
               },
               {
                 type: 'definition',
                 identifier: {
                   type: 'identifier',
-                  name: 'divided'
+                  name: 'divided',
                 },
                 value: {
                   type: 'binaryExpression',
                   operator: '/',
                   left: {
                     type: 'identifier',
-                    name: 'x'
+                    name: 'x',
                   },
                   right: {
                     type: 'identifier',
-                    name: 'y'
-                  }
-                }
+                    name: 'y',
+                  },
+                },
               },
               {
                 type: 'binaryExpression',
                 operator: '+',
                 left: {
                   type: 'identifier',
-                  name: 'multiplied'
+                  name: 'multiplied',
                 },
                 right: {
                   type: 'identifier',
-                  name: 'divided'
-                }
+                  name: 'divided',
+                },
               },
               {
                 type: 'identifier',
-                name: 'operate'
+                name: 'operate',
               },
               {
                 type: 'literal',
-                value: '2'
+                value: '2',
               },
               {
                 type: 'literal',
-                value: '3'
-              }
-            ]
-          }
-        }
-      ]
+                value: '3',
+              },
+            ],
+          },
+        },
+      ],
     });
   });
 });

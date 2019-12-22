@@ -36,19 +36,13 @@ describe('findBottomUp', () => {
   [10, 11, 12].forEach(x => thirdLevel.append(x));
 
   it('should perform a bottom-up search for a given predicate and child tree', () => {
-    const result = findBottomUp(
-      thirdLevel,
-      x => x === 1,
-    );
+    const result = findBottomUp(thirdLevel, x => x === 1);
 
     expect(result).toBe(1);
   });
 
   it('should return undefined if the predicate never returns true', () => {
-    const result = findBottomUp(
-      thirdLevel,
-      x => x === 13,
-    );
+    const result = findBottomUp(thirdLevel, x => x === 13);
 
     expect(result).toBeUndefined();
   });
@@ -56,10 +50,7 @@ describe('findBottomUp', () => {
   it('should not provide the predicate with any children that are trees', () => {
     const predicate = jest.fn();
 
-    findBottomUp(
-      tree,
-      predicate,
-    );
+    findBottomUp(tree, predicate);
 
     expect(predicate).toHaveBeenCalledTimes(3);
 

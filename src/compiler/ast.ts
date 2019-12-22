@@ -7,9 +7,7 @@ type Identifier = {
   name: string;
 };
 
-type Operand =
-  | Identifier
-  | Literal;
+type Operand = Identifier | Literal;
 
 type BinaryExpression = {
   type: 'binaryExpression';
@@ -101,10 +99,7 @@ const createBinaryExpression = (
   right: operands[1],
 });
 
-const createCallExpression = (
-  name: string,
-  args: Node[],
-): CallExpression => ({
+const createCallExpression = (name: string, args: Node[]): CallExpression => ({
   type: 'callExpression',
   callee: createIdentifier(name),
   args,
@@ -118,15 +113,10 @@ const handleOpenParens = (
     return openParens;
   }
 
-  return openParens + (value.value === '('
-    ? 1
-    : -1
-  );
+  return openParens + (value.value === '(' ? 1 : -1);
 };
 
-const buildNodes = (
-  tokens: Iterator<Token, Token>,
-) => {
+const buildNodes = (tokens: Iterator<Token, Token>) => {
   const createBinding = (
     { identifier, value }: Definition,
     name: string,
@@ -134,17 +124,17 @@ const buildNodes = (
   ) => {
     switch (value.type) {
       case 'function':
-        return createCallExpression(
-          name,
-          scan(scopeDeclarations, 1),
-        );
+        return createCallExpression(name, scan(scopeDeclarations, 1));
 
       default:
         return identifier;
     }
   };
 
-  const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
+  const captureDefinition = (
+    nodes: Node[],
+    scopeDeclarations: Tree<Definition>,
+  ) => {
     const [name, value] = scan(scopeDeclarations, 1, 2) as [Identifier, Node];
     const definition = createDefinition(name, value);
 
@@ -152,7 +142,10 @@ const buildNodes = (
     scopeDeclarations.append(definition);
   };
 
-  const captureFunction = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {
+  const captureFunction = (
+    nodes: Node[],
+    scopeDeclarations: Tree<Definition>,
+  ) => {
     const scope = scopeDeclarations.branch();
     const params = scan(scope);
     const body = scan(scope);
@@ -172,11 +165,7 @@ const buildNodes = (
 
     nodes.push(
       definition
-        ? createBinding(
-          definition,
-          name,
-          scopeDeclarations,
-        )
+        ? createBinding(definition, name, scopeDeclarations)
         : createIdentifier(name),
     );
   };
@@ -188,9 +177,7 @@ const buildNodes = (
   ) => {
     const operands = scan(scopeDeclarations, 1) as Operand[];
 
-    nodes.push(
-      createBinaryExpression(operator, operands),
-    );
+    nodes.push(createBinaryExpression(operator, operands));
   };
 
   const captureLiteral = (
@@ -206,7 +193,7 @@ const buildNodes = (
     [isFunction, captureFunction],
     [token => token.type === 'identifier', handleIdentifier],
     [token => token.type === 'operator', captureOperator],
-    [token => token.type === 'number', captureLiteral]
+    [token => token.type === 'number', captureLiteral],
   ]);
 
   const findCapturer = (token: Token) => {
@@ -230,11 +217,7 @@ const buildNodes = (
     let openParens = handleOpenParens(unterminatedSexps, result);
 
     while (!result.done && openParens > 0 && nodes.length < scanLimit) {
-      findCapturer(result.value)(
-        nodes,
-        scopeDeclarations,
-        result.value.value,
-      );
+      findCapturer(result.value)(nodes, scopeDeclarations, result.value.value);
 
       result = tokens.next();
       openParens = handleOpenParens(openParens, result);

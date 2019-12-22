@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "static -H '{\"Cache-Control\": \"no-cache, must-revalidate\"}' src",
+    "format": "prettier --write jest.config.js 'src/**/*.ts'",
     "test": "jest"
   },
   "keywords": [],
@@ -14,6 +15,7 @@
     "@types/jest": "24.0.23",
     "jest": "24.9.0",
     "node-static": "0.7.11",
+    "prettier": "1.19.1",
     "ts-jest": "24.2.0",
     "typescript": "3.7.3"
   }

@@ -38,7 +38,10 @@ const createToken = (type: KnownTokenTypes, value: string): Token => ({
 
 const isAlpha = (char: string) => /[a-z]/.test(char);
 
-const accumulateAlpha = (initialChar: string, iterator: Iterator<string, string>) => {
+const accumulateAlpha = (
+  initialChar: string,
+  iterator: Iterator<string, string>,
+) => {
   let acc = initialChar;
   let result = iterator.next();
 
@@ -58,10 +61,10 @@ const appendValuesAsTokens = (tokens: Token[], values: string[]) => {
     const type = getTokenType(value);
 
     if (type !== 'unknown') {
-      tokens.push(createToken(type, value))
+      tokens.push(createToken(type, value));
     }
   }
-}
+};
 
 const tokenise = (source: string) => {
   const tokens: Token[] = [];

@@ -142,10 +142,6 @@ const buildNodes = (
       default:
         return identifier;
     }
-    /* Assumes every reference to
-     * an identifier is a function
-     * call for the time being. */
-
   };
 
   const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {

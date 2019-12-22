@@ -8,7 +8,7 @@ export interface Tree<TChild> {
   branch(): Tree<TChild>;
   parent(): Tree<TChild> | undefined;
   children(): Child<TChild>[];
-  isTree(): true;
+  isTree: boolean;
 }
 
 type FindPredicate<TChild> = (child: TChild) => boolean;
@@ -17,7 +17,7 @@ export const createTree = <TChild>(parent?: Tree<TChild>): Tree<TChild> => {
   const children: Child<TChild>[] = [];
 
   return {
-    isTree() {
+    get isTree() {
       return true;
     },
 

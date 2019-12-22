@@ -116,9 +116,9 @@ describe('abstract syntax tree', () => {
   it('should support multiple expressions in lambdas', () => {
     // (define operate
     //   (lambda (x y)
-    //     (define mutiplied (* x y))
+    //     (define multiplied (* x y))
     //     (define divided (/ x y))
-    //     (+ mutiplied divided)
+    //     (+ multiplied divided)
     //   )
     // )
 
@@ -136,7 +136,7 @@ describe('abstract syntax tree', () => {
       { type: 'paren', value: ')' },
       { type: 'paren', value: '(' },
       { type: 'keyword', value: 'define' },
-      { type: 'identifier', value: 'mutiplied' },
+      { type: 'identifier', value: 'multiplied' },
       { type: 'paren', value: '(' },
       { type: 'operator', value: '*' },
       { type: 'identifier', value: 'x' },
@@ -154,7 +154,7 @@ describe('abstract syntax tree', () => {
       { type: 'paren', value: ')' },
       { type: 'paren', value: '(' },
       { type: 'operator', value: '+' },
-      { type: 'identifier', value: 'mutiplied' },
+      { type: 'identifier', value: 'multiplied' },
       { type: 'identifier', value: 'divided' },
       { type: 'paren', value: ')' },
       { type: 'paren', value: ')' },
@@ -192,7 +192,7 @@ describe('abstract syntax tree', () => {
                 type: 'definition',
                 identifier: {
                   type: 'identifier',
-                  name: 'mutiplied'
+                  name: 'multiplied'
                 },
                 value: {
                   type: 'binaryExpression',

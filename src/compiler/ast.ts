@@ -129,14 +129,24 @@ const buildNodes = (
   tokens: Iterator<Token, Token>,
 ) => {
   const createBinding = (
-    { value }: Definition,
+    { identifier, value }: Definition,
     name: string,
     scopeDeclarations: Tree<Definition>,
   ) => {
+    switch (value.type) {
+      case 'function':
+        return createCallExpression(
+          name,
+          scan(scopeDeclarations, 1),
+        );
+
+      default:
+        return identifier;
+    }
     /* Assumes every reference to
      * an identifier is a function
      * call for the time being. */
-    return createCallExpression(name, scan(scopeDeclarations, 1))
+
   };
 
   const captureDefinition = (nodes: Node[], scopeDeclarations: Tree<Definition>) => {

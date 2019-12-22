@@ -230,7 +230,6 @@ const buildNodes = (
     let openParens = handleOpenParens(unterminatedSexps, result);
 
     while (!result.done && openParens > 0 && nodes.length < scanLimit) {
-      // TODO: avoid duped prop name (value)
       findCapturer(result.value)(
         nodes,
         scopeDeclarations,

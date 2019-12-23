@@ -16,7 +16,7 @@ type BinaryExpression = {
   right: Operand;
 };
 
-type Program = {
+export type Program = {
   type: 'program';
   body: Node[];
 };

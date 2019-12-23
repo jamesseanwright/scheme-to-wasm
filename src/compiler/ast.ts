@@ -32,10 +32,11 @@ type Literal = {
   value: string;
 };
 
-type Function = {
+export type Function = {
   type: 'function';
   params: Node[];
   body: Node[];
+  isMain: boolean;
 };
 
 type CallExpression = {
@@ -44,7 +45,7 @@ type CallExpression = {
   args: Node[];
 };
 
-type Node =
+export type Node =
   | Program
   | BinaryExpression
   | CallExpression

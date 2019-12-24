@@ -1,6 +1,6 @@
 'use strict';
 
-import compile from '../';
+import { compile } from '../';
 
 /* These tests effectively serve as
  * end-to-end tests for the compiler */

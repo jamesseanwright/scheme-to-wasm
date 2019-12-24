@@ -9,8 +9,6 @@ const printUsageMessage = () => {
 
 const validateArg = (argName: string, value: string) => {
   assert.ok(value, `Missing argument: ${argName}`);
-  printUsageMessage();
-  process.exit(1);
 };
 
 const [, , firstArg, targetDir] = process.argv;
@@ -20,7 +18,13 @@ if (firstArg === HELP_FLAG) {
   process.exit(0);
 }
 
-validateArg('sourcePath', firstArg);
-validateArg('targetDir', targetDir);
+try {
+  validateArg('sourcePath', firstArg);
+  validateArg('targetDir', targetDir);
+} catch (e) {
+  console.error(e);
+  printUsageMessage();
+  process.exit(1);
+}
 
 compileFileToBinary(firstArg, targetDir);

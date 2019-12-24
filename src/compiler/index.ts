@@ -12,10 +12,10 @@ export const compile = (source: string) => {
 };
 
 const compileFileToBinary = (logger: typeof console) => (
-  absPath: string,
+  sourcePath: string,
   targetDir: string,
 ) => {
-  const { name: filename } = path.parse(absPath);
+  const { name: filename } = path.parse(sourcePath);
   logger.log(`🛠 Compiling ${filename}...`);
 
   // TODO: Try<T> monad

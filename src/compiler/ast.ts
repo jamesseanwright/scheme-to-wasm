@@ -9,7 +9,7 @@ export type Identifier = {
 
 type Operand = Identifier | Literal;
 
-type BinaryExpression = {
+export type BinaryExpression = {
   type: 'binaryExpression';
   operator: string;
   left: Operand;

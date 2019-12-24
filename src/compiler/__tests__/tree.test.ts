@@ -1,4 +1,4 @@
-import { createTree, findBottomUp, unwrapTree } from '../tree';
+import { createTree, findBottomUp } from '../tree';
 
 describe('tree', () => {
   describe('append', () => {

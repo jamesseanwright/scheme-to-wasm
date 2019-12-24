@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "static -H '{\"Cache-Control\": \"no-cache, must-revalidate\"}' src",
+    "build": "tsc -p .",
     "format": "prettier --write jest.config.js 'src/**/*.ts'",
     "test": "jest"
   },

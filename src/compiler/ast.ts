@@ -2,7 +2,7 @@ import { Token } from './tokeniser';
 import { createTree, Tree, findBottomUp } from './tree';
 
 // TODO: support source locations
-type Identifier = {
+export type Identifier = {
   type: 'identifier';
   name: string;
 };

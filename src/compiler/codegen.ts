@@ -15,6 +15,7 @@ const CODE_SECTION_ID = 0xa;
 
 const FUNC_TYPE = -0x20;
 const I32_TYPE = -0x01;
+const FUNC_BODY_END_TYPE = 0xb;
 
 const I32_ADD_OPCODE = 0x6a;
 const I32_SUBTRACT_OPCODE = 0x6b;
@@ -73,6 +74,23 @@ const createBinaryExpression = ({ operator, left, right }: BinaryExpression): nu
   getOperatorCode(operator),
 ];
 
+/* Currently assumes that:
+ * 1) there are no local vars
+ * 2) all params are I32
+ * TODO: fix this! */
+const createFuncLocals = (func: Function): number[] => [
+  func.params.length,
+  I32_TYPE,
+];
+
+const createFunctionBody = (func: Function, body: number[]): number[] => [
+  body.length,
+  func.params.length, // TODO: add local definitions!
+  ...createFuncLocals(func),
+  ...body,
+  FUNC_BODY_END_TYPE,
+];
+
 /* TODO: replace this with WASM start section
  * and pass result to JavaScript via import */
 const isMainFunction = (identifier: Identifier, value: Node): value is Function =>
@@ -84,24 +102,26 @@ const generateBytecode = (program: Program): number[] => {
   const functionBodies: number[] = [];
   const exports: number[] = [];
 
-  const walk = (nodes: Node[]) => {
-    const bytes: number[] = [];
+  const registerFunction = (func: Function, body: number[]) => {
+    functionSignatures.push(...createFunctionSignature(func));
+    functionDeclarations.push(functionSignatures.length - 1);
+    functionBodies.push(...createFunctionBody(func, walk(func.body, body)));
+  };
 
+  const walk = (nodes: Node[], bytes: number[] = []) => {
     for (let node of nodes) {
       switch (node.type) {
         case 'definition':
           // TODO: add non-function values to memory
           if (isMainFunction(node.identifier, node.value)) {
-            functionSignatures.push(...createFunctionSignature(node.value));
-            functionDeclarations.push(functionSignatures.length - 1);
+            registerFunction(node.value, bytes);
             exports.push(...createExport(node, functionSignatures.length - 1));
           }
 
           break;
 
         case 'function':
-          functionSignatures.push(...createFunctionSignature(node));
-          functionDeclarations.push(functionSignatures.length - 1);
+          registerFunction(node, bytes);
           break;
 
         case 'binaryExpression':

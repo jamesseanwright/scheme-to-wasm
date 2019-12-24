@@ -70,9 +70,11 @@ const getOperatorCode = (operator: string): number => {
   }
 };
 
-const createBinaryExpression = ({ operator, left, right }: BinaryExpression): number[] => [
-  getOperatorCode(operator),
-];
+const createBinaryExpression = ({
+  operator,
+  left,
+  right,
+}: BinaryExpression): number[] => [getOperatorCode(operator)];
 
 /* Currently assumes that:
  * 1) there are no local vars
@@ -93,8 +95,10 @@ const createFunctionBody = (func: Function, body: number[]): number[] => [
 
 /* TODO: replace this with WASM start section
  * and pass result to JavaScript via import */
-const isMainFunction = (identifier: Identifier, value: Node): value is Function =>
-  value.type === 'function' && identifier.name === 'run';
+const isMainFunction = (
+  identifier: Identifier,
+  value: Node,
+): value is Function => value.type === 'function' && identifier.name === 'run';
 
 const generateBytecode = (program: Program): number[] => {
   const functionSignatures: number[] = [];
@@ -138,11 +142,19 @@ const generateBytecode = (program: Program): number[] => {
   return [
     ...magicNumber,
     ...wasmVersion,
-    TYPE_SECTION_ID, functionSignatures.length, ...functionSignatures,
-    FUNCTION_SECTION_ID, functionDeclarations.length, ...functionDeclarations,
-    EXPORT_SECTION_ID, exports.length, ...exports,
+    TYPE_SECTION_ID,
+    functionSignatures.length,
+    ...functionSignatures,
+    FUNCTION_SECTION_ID,
+    functionDeclarations.length,
+    ...functionDeclarations,
+    EXPORT_SECTION_ID,
+    exports.length,
+    ...exports,
     // START_SECTION_ID, mainIndex <= TODO: leverage WASM intrinsic start function
-    CODE_SECTION_ID, functionBodies.length, ...functionBodies,
+    CODE_SECTION_ID,
+    functionBodies.length,
+    ...functionBodies,
   ];
 };
 

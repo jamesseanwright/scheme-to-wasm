@@ -11,23 +11,25 @@ export const compile = (source: string) => {
   return generateBytecode(ast);
 };
 
-const compileFileToBinary = (logger: typeof console) =>
-  (absPath: string, targetDir: string) => {
-    const { name: filename } = path.parse(absPath);
-    logger.log(`🛠 Compiling ${filename}...`);
+const compileFileToBinary = (logger: typeof console) => (
+  absPath: string,
+  targetDir: string,
+) => {
+  const { name: filename } = path.parse(absPath);
+  logger.log(`🛠 Compiling ${filename}...`);
 
-    // TODO: Try<T> monad
-    try {
-      const source = fs.readFileSync(filename).toString();
-      const bytes = compile(source);
-      const targetFile = filename.replace(/.scm$/, '.wasm');
-      const targetPath = path.join(targetDir, targetFile);
+  // TODO: Try<T> monad
+  try {
+    const source = fs.readFileSync(filename).toString();
+    const bytes = compile(source);
+    const targetFile = filename.replace(/.scm$/, '.wasm');
+    const targetPath = path.join(targetDir, targetFile);
 
-      fs.writeFileSync(targetPath, new Uint8Array(bytes), 'bin');
-      logger.log(`✅ Compiled ${filename} to ${targetPath}!`);
-    } catch (e) {
-      logger.error(`❌ Unable to compile ${filename}:`, e);
-    }
-  };
+    fs.writeFileSync(targetPath, new Uint8Array(bytes), 'bin');
+    logger.log(`✅ Compiled ${filename} to ${targetPath}!`);
+  } catch (e) {
+    logger.error(`❌ Unable to compile ${filename}:`, e);
+  }
+};
 
 export default compileFileToBinary(console);

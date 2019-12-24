@@ -21,7 +21,7 @@ export type Program = {
   body: Node[];
 };
 
-type Definition = {
+export type Definition = {
   type: 'definition';
   identifier: Identifier;
   value: Node;
@@ -36,7 +36,6 @@ export type Function = {
   type: 'function';
   params: Node[];
   body: Node[];
-  isMain: boolean;
 };
 
 type CallExpression = {

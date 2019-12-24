@@ -105,7 +105,7 @@ const generateBytecode = (program: Program): number[] => {
           break;
 
         case 'binaryExpression':
-          bytes.push(createBinaryExpression(node));
+          bytes.push(...createBinaryExpression(node));
           break;
       }
     }

@@ -15,20 +15,21 @@ const compileFileToBinary = (logger: typeof console) => (
   sourcePath: string,
   targetDir: string,
 ) => {
-  const { name: filename } = path.parse(sourcePath);
-  logger.log(`🛠 Compiling ${filename}...`);
+  const { name, ext } = path.parse(sourcePath);
+  const filename = `${name}${ext}`;
+  logger.log(`🛠  Compiling ${filename}...`);
 
   // TODO: Try<T> monad
   try {
-    const source = fs.readFileSync(filename).toString();
+    const source = fs.readFileSync(sourcePath).toString();
     const bytes = compile(source);
     const targetFile = filename.replace(/.scm$/, '.wasm');
     const targetPath = path.join(targetDir, targetFile);
 
-    fs.writeFileSync(targetPath, new Uint8Array(bytes), 'bin');
-    logger.log(`✅ Compiled ${filename} to ${targetPath}!`);
+    fs.writeFileSync(targetPath, new Uint8Array(bytes));
+    logger.log(`✅  Compiled ${filename} to ${targetPath}!`);
   } catch (e) {
-    logger.error(`❌ Unable to compile ${filename}:`, e);
+    logger.error(`❌  Unable to compile ${filename}:`, e);
   }
 };
 

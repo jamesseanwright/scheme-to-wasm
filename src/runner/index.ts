@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as url from 'url';
 import * as assert from 'assert';
 import * as fs from 'fs';
+import * as path from 'path';
 import getHtml from './html';
 
 function assertEntry(entry?: string): asserts entry is string {
@@ -24,7 +25,7 @@ const serveHtml = (res: http.ServerResponse, markup: string) => {
 };
 
 const serveWasm = (res: http.ServerResponse, filename: string) => {
-  const wasm = fs.createReadStream(filename);
+  const wasm = fs.createReadStream(path.resolve(__dirname, filename));
 
   res.writeHead(200, {
     'Content-Type': 'application/wasm',

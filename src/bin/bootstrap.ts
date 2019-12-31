@@ -14,5 +14,7 @@ console.log(`👢  Bootstrapping app in ${targetDir}...`);
   );
 });
 
-// TODO: reference entry point env var
-console.log(`✅  Boostrapped! You can run your app with:\nnode ${targetDir}`);
+// TODO: generalise entry point name or pass value here
+console.log(
+  `✅  Boostrapped! You can run your app with:\nnode ${targetDir} [entry-filename]`
+);

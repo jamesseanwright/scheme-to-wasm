@@ -16,5 +16,5 @@ console.log(`👢  Bootstrapping app in ${targetDir}...`);
 
 // TODO: generalise entry point name or pass value here
 console.log(
-  `✅  Boostrapped! You can run your app with:\nnode ${targetDir} [entry-filename]`
+  `✅  Boostrapped! You can run your app with:\nnode ${targetDir} [entry-filename]`,
 );

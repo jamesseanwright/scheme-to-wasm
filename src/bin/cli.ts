@@ -3,17 +3,16 @@ import * as assert from 'assert';
 const HELP_FLAG = '--help';
 
 const printUsageMessage = (scriptName: string, argNames: string[]) => {
-  console.log(`Usage: node ${scriptName} ${argNames.map(a => `[${a}]`).join(' ')}`);
+  console.log(
+    `Usage: node ${scriptName} ${argNames.map(a => `[${a}]`).join(' ')}`,
+  );
 };
 
 const validateArg = (argName: string, value: string) => {
   assert.ok(value, `Missing argument: ${argName}`);
 };
 
-const cli = (
-  argv: string[],
-  argNames: string[],
-) => {
+const cli = (argv: string[], argNames: string[]) => {
   const [, scriptName, ...args] = argv;
 
   if (args[0] === HELP_FLAG) {

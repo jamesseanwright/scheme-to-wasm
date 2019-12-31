@@ -14,7 +14,7 @@ const cli = (
   argv: string[],
   argNames: string[],
 ) => {
-  const [, scriptName, ...args] = process.argv;
+  const [, scriptName, ...args] = argv;
 
   if (args[0] === HELP_FLAG) {
     printUsageMessage(scriptName, argNames);

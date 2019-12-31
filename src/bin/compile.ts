@@ -11,6 +11,7 @@ const validateArg = (argName: string, value: string) => {
   assert.ok(value, `Missing argument: ${argName}`);
 };
 
+// TODO: provide default target dir
 const [, , firstArg, targetDir] = process.argv;
 
 if (firstArg === HELP_FLAG) {

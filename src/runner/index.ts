@@ -8,12 +8,12 @@ function assertEntry(entry?: string): asserts entry is string {
   assert.ok(entry, 'WASM entry point is not defined!');
 }
 
-const [, , entry] = process.argv;
-const port = 9009;
+const [, , ENTRY] = process.argv;
+const PORT = 9009;
 
-assertEntry(entry);
+assertEntry(ENTRY);
 
-const html = getHtml(entry);
+const html = getHtml(ENTRY);
 
 const serveHtml = (res: http.ServerResponse, markup: string) => {
   res.writeHead(200, {
@@ -56,6 +56,6 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`🌍  Serving application on port ${port}...`);
+server.listen(PORT, () => {
+  console.log(`🌍  Serving application on port ${PORT}...`);
 });

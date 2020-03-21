@@ -116,10 +116,7 @@ const isMainFunction = (
   value: Node,
 ): value is Function => value.type === 'function' && identifier.name === 'run';
 
-const registerFunction = (
-  compiledProgram: CompiledProgram,
-  func: Function,
-) => {
+const registerFunction = (compiledProgram: CompiledProgram, func: Function) => {
   compiledProgram.types.push(...createFunctionSignature(func));
 
   compiledProgram.functionDeclarations.push(compiledProgram.types.length - 1);
@@ -129,10 +126,7 @@ const registerFunction = (
   );
 };
 
-const walk = (
-  compiledProgram: CompiledProgram,
-  nodes: Node[],
-) => {
+const walk = (compiledProgram: CompiledProgram, nodes: Node[]) => {
   const {
     types,
     functionDeclarations,
@@ -160,6 +154,8 @@ const walk = (
       case 'binaryExpression':
         bytes.push(...createBinaryExpression(compiledProgram, node));
         break;
+
+      // TODO: handle identifiers and literals
     }
   }
 

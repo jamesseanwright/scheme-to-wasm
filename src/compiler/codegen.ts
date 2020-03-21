@@ -8,7 +8,7 @@ import {
 } from './ast';
 
 type CompiledProgram = {
-  functionSignatures: number[];
+  types: number[];
   functionDeclarations: number[];
   functionBodies: number[];
   exports: number[];
@@ -45,7 +45,7 @@ const magicNumber = [0x0, 0x61, 0x73, 0x6d];
 const wasmVersion = bytePad([0x1], 4);
 
 const createCompiledProgram = (): CompiledProgram => ({
-  functionSignatures: [],
+  types: [],
   functionDeclarations: [],
   functionBodies: [],
   exports: [],
@@ -101,7 +101,7 @@ const createFuncLocals = (func: Function): number[] => [
 
 const createFunctionBody = (func: Function, body: number[]): number[] => [
   body.length,
-  func.params.length, // TODO: add local definitions!
+  func.params.length, // TODO: add support for local definitions!
   ...createFuncLocals(func),
   ...body,
   FUNC_BODY_END_TYPE,
@@ -119,9 +119,9 @@ const registerFunction = (
   body: number[],
   compiledProgram: CompiledProgram,
 ) => {
-  compiledProgram.functionSignatures.push(...createFunctionSignature(func));
+  compiledProgram.types.push(...createFunctionSignature(func));
   compiledProgram.functionDeclarations.push(
-    compiledProgram.functionSignatures.length - 1,
+    compiledProgram.types.length - 1,
   );
   compiledProgram.functionBodies.push(
     ...createFunctionBody(func, walk(func.body, body, compiledProgram)),
@@ -134,7 +134,7 @@ const walk = (
   compiledProgram: CompiledProgram,
 ) => {
   const {
-    functionSignatures,
+    types,
     functionDeclarations,
     functionBodies,
     exports,
@@ -146,7 +146,7 @@ const walk = (
         // TODO: add non-function values to memory
         if (isMainFunction(node.identifier, node.value)) {
           registerFunction(node.value, bytes, compiledProgram);
-          exports.push(...createExport(node, functionSignatures.length - 1));
+          exports.push(...createExport(node, types.length - 1));
         }
 
         break;
@@ -168,6 +168,7 @@ const generateBytecode = (program: Program): number[] => {
   const compiledProgram = createCompiledProgram();
 
   /* TODO: default for the bytes array
+   * within walk's signature.
    * It's really an impl detail */
   walk(program.body, [], compiledProgram);
 
@@ -175,8 +176,8 @@ const generateBytecode = (program: Program): number[] => {
     ...magicNumber,
     ...wasmVersion,
     TYPE_SECTION_ID,
-    compiledProgram.functionSignatures.length,
-    ...compiledProgram.functionSignatures,
+    compiledProgram.types.length,
+    ...compiledProgram.types,
     FUNCTION_SECTION_ID,
     compiledProgram.functionDeclarations.length,
     ...compiledProgram.functionDeclarations,

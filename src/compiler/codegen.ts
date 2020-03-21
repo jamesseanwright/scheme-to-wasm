@@ -115,23 +115,25 @@ const isMainFunction = (
 ): value is Function => value.type === 'function' && identifier.name === 'run';
 
 const registerFunction = (
+  compiledProgram: CompiledProgram,
   func: Function,
   body: number[],
-  compiledProgram: CompiledProgram,
 ) => {
   compiledProgram.types.push(...createFunctionSignature(func));
+
   compiledProgram.functionDeclarations.push(
     compiledProgram.types.length - 1,
   );
+
   compiledProgram.functionBodies.push(
-    ...createFunctionBody(func, walk(func.body, body, compiledProgram)),
+    ...createFunctionBody(func, walk(compiledProgram, func.body, body)),
   );
 };
 
 const walk = (
-  nodes: Node[],
-  bytes: number[],
   compiledProgram: CompiledProgram,
+  nodes: Node[],
+  bytes: number[] = [],
 ) => {
   const {
     types,
@@ -145,14 +147,14 @@ const walk = (
       case 'definition':
         // TODO: add non-function values to memory
         if (isMainFunction(node.identifier, node.value)) {
-          registerFunction(node.value, bytes, compiledProgram);
+          registerFunction(compiledProgram, node.value, bytes);
           exports.push(...createExport(node, types.length - 1));
         }
 
         break;
 
       case 'function':
-        registerFunction(node, bytes, compiledProgram);
+        registerFunction(compiledProgram, node, bytes);
         break;
 
       case 'binaryExpression':
@@ -167,10 +169,7 @@ const walk = (
 const generateBytecode = (program: Program): number[] => {
   const compiledProgram = createCompiledProgram();
 
-  /* TODO: default for the bytes array
-   * within walk's signature.
-   * It's really an impl detail */
-  walk(program.body, [], compiledProgram);
+  walk(compiledProgram, program.body);
 
   return [
     ...magicNumber,

@@ -7,6 +7,13 @@ import {
   BinaryExpression,
 } from './ast';
 
+type CompiledProgram = {
+  functionSignatures: number[];
+  functionDeclarations: number[];
+  functionBodies: number[];
+  exports: number[];
+};
+
 const TYPE_SECTION_ID = 0x1;
 const FUNCTION_SECTION_ID = 0x3;
 const EXPORT_SECTION_ID = 0x7;
@@ -36,6 +43,13 @@ const stringToBytes = (string: string): number[] =>
 
 const magicNumber = [0x0, 0x61, 0x73, 0x6d];
 const wasmVersion = bytePad([0x1], 4);
+
+const createCompiledProgram = (): CompiledProgram => ({
+  functionSignatures: [],
+  functionDeclarations: [],
+  functionBodies: [],
+  exports: [],
+});
 
 const createFunctionSignature = ({ params }: Function): number[] => [
   FUNC_TYPE,
@@ -101,10 +115,12 @@ const isMainFunction = (
 ): value is Function => value.type === 'function' && identifier.name === 'run';
 
 const generateBytecode = (program: Program): number[] => {
-  const functionSignatures: number[] = [];
-  const functionDeclarations: number[] = [];
-  const functionBodies: number[] = [];
-  const exports: number[] = [];
+  const {
+    functionSignatures,
+    functionDeclarations,
+    functionBodies,
+    exports,
+  } = createCompiledProgram();
 
   const registerFunction = (func: Function, body: number[]) => {
     functionSignatures.push(...createFunctionSignature(func));

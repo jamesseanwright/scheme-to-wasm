@@ -114,63 +114,79 @@ const isMainFunction = (
   value: Node,
 ): value is Function => value.type === 'function' && identifier.name === 'run';
 
-const generateBytecode = (program: Program): number[] => {
+const registerFunction = (
+  func: Function,
+  body: number[],
+  compiledProgram: CompiledProgram,
+) => {
+  compiledProgram.functionSignatures.push(...createFunctionSignature(func));
+  compiledProgram.functionDeclarations.push(
+    compiledProgram.functionSignatures.length - 1,
+  );
+  compiledProgram.functionBodies.push(
+    ...createFunctionBody(func, walk(func.body, body, compiledProgram)),
+  );
+};
+
+const walk = (
+  nodes: Node[],
+  bytes: number[],
+  compiledProgram: CompiledProgram,
+) => {
   const {
     functionSignatures,
     functionDeclarations,
     functionBodies,
     exports,
-  } = createCompiledProgram();
+  } = compiledProgram;
 
-  const registerFunction = (func: Function, body: number[]) => {
-    functionSignatures.push(...createFunctionSignature(func));
-    functionDeclarations.push(functionSignatures.length - 1);
-    functionBodies.push(...createFunctionBody(func, walk(func.body, body)));
-  };
+  for (let node of nodes) {
+    switch (node.type) {
+      case 'definition':
+        // TODO: add non-function values to memory
+        if (isMainFunction(node.identifier, node.value)) {
+          registerFunction(node.value, bytes, compiledProgram);
+          exports.push(...createExport(node, functionSignatures.length - 1));
+        }
 
-  const walk = (nodes: Node[], bytes: number[] = []) => {
-    for (let node of nodes) {
-      switch (node.type) {
-        case 'definition':
-          // TODO: add non-function values to memory
-          if (isMainFunction(node.identifier, node.value)) {
-            registerFunction(node.value, bytes);
-            exports.push(...createExport(node, functionSignatures.length - 1));
-          }
+        break;
 
-          break;
+      case 'function':
+        registerFunction(node, bytes, compiledProgram);
+        break;
 
-        case 'function':
-          registerFunction(node, bytes);
-          break;
-
-        case 'binaryExpression':
-          bytes.push(...createBinaryExpression(node));
-          break;
-      }
+      case 'binaryExpression':
+        bytes.push(...createBinaryExpression(node));
+        break;
     }
+  }
 
-    return bytes;
-  };
+  return bytes;
+};
 
-  walk(program.body);
+const generateBytecode = (program: Program): number[] => {
+  const compiledProgram = createCompiledProgram();
+
+  /* TODO: default for the bytes array
+   * It's really an impl detail */
+  walk(program.body, [], compiledProgram);
 
   return [
     ...magicNumber,
     ...wasmVersion,
     TYPE_SECTION_ID,
-    functionSignatures.length,
-    ...functionSignatures,
+    compiledProgram.functionSignatures.length,
+    ...compiledProgram.functionSignatures,
     FUNCTION_SECTION_ID,
-    functionDeclarations.length,
-    ...functionDeclarations,
+    compiledProgram.functionDeclarations.length,
+    ...compiledProgram.functionDeclarations,
     EXPORT_SECTION_ID,
-    exports.length,
-    ...exports,
+    compiledProgram.exports.length,
+    ...compiledProgram.exports,
     // START_SECTION_ID, mainIndex <= TODO: leverage WASM intrinsic start function
     CODE_SECTION_ID,
-    functionBodies.length,
-    ...functionBodies,
+    compiledProgram.functionBodies.length,
+    ...compiledProgram.functionBodies,
   ];
 };
 

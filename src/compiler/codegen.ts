@@ -84,11 +84,13 @@ const getOperatorCode = (operator: string): number => {
   }
 };
 
-const createBinaryExpression = ({
-  operator,
-  left,
-  right,
-}: BinaryExpression): number[] => [getOperatorCode(operator)];
+const createBinaryExpression = (
+  compiledProgram: CompiledProgram,
+  { operator, left, right }: BinaryExpression,
+): number[] => [
+  getOperatorCode(operator),
+  ...walk(compiledProgram, [left, right]),
+];
 
 /* Currently assumes that:
  * 1) there are no local vars
@@ -117,23 +119,19 @@ const isMainFunction = (
 const registerFunction = (
   compiledProgram: CompiledProgram,
   func: Function,
-  body: number[],
 ) => {
   compiledProgram.types.push(...createFunctionSignature(func));
 
-  compiledProgram.functionDeclarations.push(
-    compiledProgram.types.length - 1,
-  );
+  compiledProgram.functionDeclarations.push(compiledProgram.types.length - 1);
 
   compiledProgram.functionBodies.push(
-    ...createFunctionBody(func, walk(compiledProgram, func.body, body)),
+    ...createFunctionBody(func, walk(compiledProgram, func.body)),
   );
 };
 
 const walk = (
   compiledProgram: CompiledProgram,
   nodes: Node[],
-  bytes: number[] = [],
 ) => {
   const {
     types,
@@ -142,23 +140,25 @@ const walk = (
     exports,
   } = compiledProgram;
 
+  const bytes: number[] = [];
+
   for (let node of nodes) {
     switch (node.type) {
       case 'definition':
         // TODO: add non-function values to memory
         if (isMainFunction(node.identifier, node.value)) {
-          registerFunction(compiledProgram, node.value, bytes);
+          registerFunction(compiledProgram, node.value);
           exports.push(...createExport(node, types.length - 1));
         }
 
         break;
 
       case 'function':
-        registerFunction(compiledProgram, node, bytes);
+        registerFunction(compiledProgram, node);
         break;
 
       case 'binaryExpression':
-        bytes.push(...createBinaryExpression(node));
+        bytes.push(...createBinaryExpression(compiledProgram, node));
         break;
     }
   }
